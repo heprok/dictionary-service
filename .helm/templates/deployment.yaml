@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: { { .Values.werf.name } }
+spec:
+  selector:
+    matchLabels:
+      app: { { .Values.werf.name } }
+  strategy:
+    type: RollingUpdate
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: { { .Values.werf.name } }
+    spec:
+      containers:
+        - name: { { .Values.werf.name } }-api
+          command: [ "java","-jar","application.jar" ]
+          image: { { .Values.werf.image.api } }
+          workingDir: /
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+  { { include "app.envVars" . | indent 12 } }
+serviceAccountName: { { .Values.werf.name } }

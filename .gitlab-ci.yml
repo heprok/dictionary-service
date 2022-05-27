@@ -1,0 +1,124 @@
+#stages:
+#  - build
+#  - deploy
+#  - cleanup
+#
+#.init_werf: &init_werf
+#  - source "$(~/bin/trdl use werf 1.2 stable)"
+#  - type werf && source $(werf ci-env gitlab --as-file --platform linux/amd64)
+#
+#.dev_eks: &dev_eks
+#  - aws eks --region us-east-2 update-kubeconfig --name briolink-dev
+#
+#.prod_eks: &prod_eks
+#  - aws eks --region us-east-2 update-kubeconfig --name bl-network-prod-use2
+#  - kubectl config set-context --current --namespace=
+#
+#.dev_werf: &dev_werf
+#  - *init_werf
+#  - *dev_eks
+#  - aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin ${WERF_REPO_DEV}
+#
+#.prod_werf: &prod_werf
+#  - *init_werf
+#  - *prod_eks
+#  - aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin ${WERF_REPO_PROD}
+#
+#.dev_deploy: &dev_deploy
+#  stage: deploy
+#  script:
+#    - *dev_werf
+#    - werf converge --skip-build --set "env_url=$(echo ${CI_ENVIRONMENT_URL} | cut -d / -f 3)" --platform linux/amd64
+#  dependencies:
+#    - Build and Publish Development
+#  tags:
+#    - docker_spot_runner
+#
+#.prod_deploy: &prod_deploy
+#  stage: deploy
+#  script:
+#    - *prod_werf
+#    - werf converge --skip-build --set "env_url=$(echo ${CI_ENVIRONMENT_URL} | cut -d / -f 3)" --platform linux/amd64
+#  dependencies:
+#    - Build and Publish Production
+#  tags:
+#    - bl-network-prod-use2
+#
+#Build and Publish Development:
+#  stage: build
+#  script:
+#    - *dev_werf
+#    - werf build --platform linux/amd64
+#  except:
+#    - schedules
+#  tags:
+#    - docker_spot_runner
+#  only:
+#    - dev
+#    - test
+#    - demo
+#
+#Build and Publish Production:
+#  stage: build
+#  script:
+#    - *prod_werf
+#    - werf build --platform linux/amd64
+#  except:
+#    - schedules
+#  tags:
+#    - bl-network-prod-use2
+#  only:
+#    - main
+#
+#Deploy to Development:
+#  <<: *dev_deploy
+#  environment:
+#    name: dev
+#    url: http://dictionary-service.dev.svc.cluster.local
+#  only:
+#    - dev
+#
+#Deploy to Demo:
+#  <<: *dev_deploy
+#  environment:
+#    name: demo
+#    url: http://dictionary-service.demo.svc.cluster.local
+#  only:
+#    - demo
+#
+#Deploy to Test:
+#  <<: *dev_deploy
+#  environment:
+#    name: test
+#    url: http://dictionary-service.test.svc.cluster.local
+#  only:
+#    - test
+#
+#Deploy to Production:
+#  <<: *prod_deploy
+#  environment:
+#    name: prod
+#    url: http://dictionary-service.app.svc.cluster.local
+#  only:
+#    - main
+#
+#Cleanup Development:
+#  stage: cleanup
+#  script:
+#    - *dev_werf
+#    - werf cleanup --platform linux/amd64
+#  only:
+#    - schedules
+#  tags:
+#    - docker_spot_runner
+#
+#Cleanup Production:
+#  stage: cleanup
+#  script:
+#    - *prod_werf
+#    - kubectl config set-context --current --namespace=prod
+#    - werf cleanup --platform linux/amd64 --scan-context-namespace-only
+#  only:
+#    - schedules
+#  tags:
+#    - bl-network-prod-use2

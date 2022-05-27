@@ -1,0 +1,50 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1653680516-init
+      author: oleg@briolink.com
+      changes:
+        - createTable:
+            tableName: tag
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: type
+                  type: int2
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: slug
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name_tsv
+                  type: tsvector
+                  constraints:
+                    nullable: false
+              - column:
+                  name: path
+                  type: ltree
+                  constraints:
+                    nullable: true
+        - addUniqueConstraint:
+            tableName: tag
+            constraintName: unq_tag_slug
+            columnNames: type, slug
+        - sql:
+            sql: create index idx_tag_name on tag using btree ( name );
+        - sql:
+            sql: create index idx_tag_name_tsv on tag using gin ( name_tsv );
+        - sql:
+            sql: create index idx_tag_path on tag using gist ( path );

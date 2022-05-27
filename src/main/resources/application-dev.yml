@@ -1,0 +1,6 @@
+server:
+  error:
+    include-stacktrace: always
+spring:
+  jpa:
+    show-sql: true

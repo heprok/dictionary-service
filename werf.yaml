@@ -1,0 +1,10 @@
+configVersion: 1
+project: dictionary-service
+deploy:
+  helmRelease: "[[ project ]]-[[ env ]]"
+  namespace: "[[ env ]]"
+---
+image: api
+dockerfile: Dockerfile
+args:
+  CI_DEPLOY_PASSWORD: { { env "CI_DEPLOY_PASSWORD" } }
