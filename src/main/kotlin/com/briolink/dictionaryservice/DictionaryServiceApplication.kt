@@ -6,8 +6,8 @@ import org.springframework.boot.runApplication
 
 @SpringBootApplication
 @ConfigurationPropertiesScan
-class LocationServiceApplication
+class DictionaryServiceApplication
 
 fun main(args: Array<String>) {
-    runApplication<LocationServiceApplication>(*args)
+    runApplication<DictionaryServiceApplication>(*args)
 }

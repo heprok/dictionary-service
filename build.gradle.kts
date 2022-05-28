@@ -7,6 +7,8 @@ plugins {
     kotlin("jvm") version Versions.KOTLIN
     kotlin("kapt") version Versions.KOTLIN
     kotlin("plugin.spring") version Versions.KOTLIN
+    kotlin("plugin.jpa") version Versions.KOTLIN
+    kotlin("plugin.allopen") version Versions.KOTLIN
 }
 
 apply {
@@ -109,6 +111,10 @@ dependencies {
     kapt("org.springframework.boot:spring-boot-autoconfigure-processor")
     kapt("org.springframework.boot:spring-boot-configuration-processor")
     implementation("me.paulschwarz:spring-dotenv:${Versions.Spring.DOTENV}")
+    implementation("org.springframework.security:spring-security-core")
+    implementation("org.springframework.security:spring-security-oauth2-jose")
+    implementation("org.springframework.security:spring-security-oauth2-resource-server")
+
     // FasterXML
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 

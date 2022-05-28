@@ -1,7 +1,8 @@
-package com.briolink.dictionaryservice.dto
+package com.briolink.dictionaryservice.service.tag.dto
 
 import com.briolink.dictionaryservice.model.TagType
 import com.briolink.dictionaryservice.validation.NullOrValidPath
+import com.briolink.dictionaryservice.validation.NullOrValidSlug
 import io.swagger.annotations.ApiModelProperty
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
@@ -14,13 +15,12 @@ data class TagDto(
     @get:ApiModelProperty(required = true, example = "Technology agency")
     val name: String,
     @get:ApiModelProperty(required = false, example = "technology-agency")
-    @get:NullOrValidPath
+    @get:NullOrValidSlug
     val slug: String? = null,
     @get:NotNull
-    @get:NotBlank
     @get:ApiModelProperty(required = true, example = "Industry")
     val type: TagType,
     @get:NullOrValidPath
-    @get:ApiModelProperty(required = true, example = "1.3.1")
+    @get:ApiModelProperty(required = false, example = "1.3.1")
     val path: String? = null,
 )

@@ -2,7 +2,6 @@ package com.briolink.dictionaryservice.controller
 
 import com.briolink.dictionaryservice.service.suggestion.SuggestionService
 import com.briolink.dictionaryservice.service.suggestion.dto.SuggestionRequest
-import com.briolink.dictionaryservice.service.tag.TagService
 import com.briolink.lib.common.type.basic.BlSuggestion
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController
 )
 @RequestMapping("/api/v1/suggestions")
 class SuggestionController(
-    private val tagService: TagService,
     private val suggestionService: SuggestionService,
 ) {
     @GetMapping("/")
