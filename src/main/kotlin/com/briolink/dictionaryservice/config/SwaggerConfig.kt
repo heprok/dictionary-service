@@ -14,7 +14,7 @@ class SwaggerConfig {
         return Docket(DocumentationType.SWAGGER_2)
             .useDefaultResponseMessages(false)
             .select()
-            .apis(RequestHandlerSelectors.basePackage("com.briolink.locationservice.controller"))
+            .apis(RequestHandlerSelectors.basePackage("com.briolink.dictionaryservice.controller"))
             .paths(PathSelectors.any())
             .build()
     }

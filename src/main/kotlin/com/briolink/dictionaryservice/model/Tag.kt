@@ -3,11 +3,14 @@ package com.briolink.dictionaryservice.model
 import com.briolink.dictionaryservice.jpa.entity.TagEntity
 import com.fasterxml.jackson.annotation.JsonProperty
 import java.util.UUID
+import javax.persistence.EnumType
+import javax.persistence.Enumerated
 
 data class Tag(
     @JsonProperty
     var id: UUID,
     @JsonProperty
+    @Enumerated(EnumType.STRING)
     var type: TagType,
     @JsonProperty
     var slug: String,
@@ -21,11 +24,11 @@ data class Tag(
     var parent: Tag? = null
 }
 
-fun TagEntity.toDto() = Tag(
+fun TagEntity.toDto(): Tag = Tag(
     id = id!!,
     type = tagEnum,
     slug = slug,
     name = name
-).let {
+).also {
     it.path = path
 }

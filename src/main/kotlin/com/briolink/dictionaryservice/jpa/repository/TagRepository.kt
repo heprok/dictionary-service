@@ -13,9 +13,27 @@ interface TagRepository : JpaRepository<TagEntity, UUID> {
 
     fun countByTypeAndSlug(type: Int, slug: String): Long
     fun findByTypeAndNameAndPath(type: Int, name: String, path: String?): TagEntity?
+    fun findByTypeAndPath(type: Int, path: String): TagEntity?
     fun findByTypeAndPathIn(type: Int, names: List<String>): List<TagEntity>
     fun getAllByType(type: Int): Stream<TagEntity>
     fun findByTypeAndSlug(type: Int, slug: String): TagEntity?
+
+    @Query(
+        """
+        select
+            e.slug as id,
+            e.name as name
+        from TagEntity e
+        where
+            e.type = :type and
+            (:query is null or function('fts_query', 'simple', e.nameTsv, :query) = true)
+        """,
+    )
+    fun getSuggestionWithSlug(
+        @Param("type") type: Int,
+        @Param("query") query: String? = null,
+        pageable: Pageable = Pageable.ofSize(10)
+    ): List<IBaseSuggestion>
 
     @Query(
         """
@@ -28,7 +46,7 @@ interface TagRepository : JpaRepository<TagEntity, UUID> {
             (:query is null or function('fts_query', 'simple', e.nameTsv, :query) = true)
         """,
     )
-    fun getSuggestion(
+    fun getSuggestionWithId(
         @Param("type") type: Int,
         @Param("query") query: String? = null,
         pageable: Pageable = Pageable.ofSize(10)
@@ -53,12 +71,12 @@ interface TagRepository : JpaRepository<TagEntity, UUID> {
         @Param("query") query: String? = null,
         @Param("parents") parents: String = "",
         pageable: Pageable = Pageable.ofSize(10)
-    ): List<TagEntity>
+    ): List<IBaseSuggestion>
 
     @Query(
         """
         select
-            count(e) > 0 
+            count(e) > 0
         from TagEntity e
         where
             e.type = :type and

@@ -6,7 +6,6 @@ import com.briolink.lib.common.jpa.type.PersistentEnumSetType
 import com.briolink.lib.common.jpa.type.PersistentEnumType
 import com.briolink.lib.common.jpa.type.SetArrayType
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType
-import org.hibernate.annotations.Type
 import org.hibernate.annotations.TypeDef
 import org.hibernate.annotations.TypeDefs
 import java.util.UUID
@@ -28,7 +27,6 @@ import javax.persistence.MappedSuperclass
 abstract class BaseEntity {
     @Id
     @GeneratedValue
-    @Type(type = "pg-uuid")
     @Column(name = "id", nullable = false)
     var id: UUID? = null
 }

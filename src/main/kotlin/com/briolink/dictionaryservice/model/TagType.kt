@@ -1,9 +1,8 @@
 package com.briolink.dictionaryservice.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.annotation.JsonValue
 
-enum class TagType(@JsonValue val value: Int) {
+enum class TagType(val value: Int) {
     @JsonProperty
     Industry(1),
 
@@ -17,25 +16,23 @@ enum class TagType(@JsonValue val value: Int) {
     ProductCode(4),
 
     @JsonProperty
-    ServiceProvider(5),
+    InvestorType(5),
 
     @JsonProperty
-    InvestorType(6),
+    OwnerShipStatus(6),
 
     @JsonProperty
-    OwnerShipStatus(7),
+    Universe(7),
 
     @JsonProperty
-    Universe(8),
+    DealStatus(8),
 
     @JsonProperty
-    DealStatus(9),
-
-    @JsonProperty
-    ServiceProviderType(10);
+    ServiceProviderType(9);
 
     companion object {
         private val map = values().associateBy(TagType::value)
+
         fun ofValue(type: Int): TagType = map[type] ?: throw IllegalArgumentException("$type is not a valid TagType")
     }
 }

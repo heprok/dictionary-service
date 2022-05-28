@@ -1,5 +1,10 @@
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type: TRACE
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 server:
-  port: 8070
+  port: 8060
   error:
     include-stacktrace: always
 spring:
