@@ -11,7 +11,7 @@ spring:
       max-file-size: 2MB
       max-request-size: 2MB
   datasource:
-    url: jdbc:postgresql://${env.DB_HOST:localhost}:${env.DB_PORT:5432}/${env.spring_profiles_active}_location
+    url: jdbc:postgresql://${env.DB_HOST:localhost}:${env.DB_PORT:5432}/${env.spring_profiles_active}_dictionary
     username: ${env.DB_USER:ok}
     password: ${env.DB_PASSWORD:ok}
     hikari:
@@ -23,13 +23,12 @@ spring:
       ddl-auto: none
     properties:
       hibernate:
+        types:
+          print:
+            banner: false
+        metadata_builder_contributor: com.briolink.common.lib.jpa.Functions
     generate-ddl: false
     show-sql: false
     open-in-view: false
   liquibase:
     change-log: db/changelog.xml
-app:
-  csv-files-location:
-    country: https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/csv/countries.csv
-    state: https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/csv/states.csv
-    city: https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/csv/cities.csv

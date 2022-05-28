@@ -82,7 +82,7 @@ repositories {
     mavenLocal()
     setOf(
         36319712, // BL Common
-        36548529, // BL Dictionary
+        // 36548529, // BL Dictionary
     ).forEach {
         maven {
             url = uri("https://gitlab.com/api/v4/projects/$it/packages/maven")
@@ -101,6 +101,7 @@ dependencies {
     // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     annotationProcessor("org.springframework.boot:spring-boot-autoconfigure-processor")
@@ -119,7 +120,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
     // BRIOLINK LOCATION
-    implementation("com.briolink.lib:dictionary:${Versions.Briolink.DICTIONARY}")
+    // implementation("com.briolink.lib:dictionary:${Versions.Briolink.DICTIONARY}")
     implementation("com.briolink.lib:common:${Versions.Briolink.COMMON}")
 
     // Liquibase
