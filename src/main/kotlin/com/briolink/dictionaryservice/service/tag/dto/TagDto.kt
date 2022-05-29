@@ -16,7 +16,7 @@ data class TagDto(
     val name: String,
     @get:ApiModelProperty(required = false, example = "technology-agency")
     @get:NullOrValidSlug
-    val slug: String? = null,
+    val id: String? = null,
     @get:NotNull
     @get:ApiModelProperty(required = true, example = "Industry")
     val type: TagType,

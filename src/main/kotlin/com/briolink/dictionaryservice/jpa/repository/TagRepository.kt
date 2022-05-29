@@ -1,39 +1,24 @@
 package com.briolink.dictionaryservice.jpa.repository
 
 import com.briolink.dictionaryservice.jpa.entity.TagEntity
+import com.briolink.dictionaryservice.model.TagType
 import com.briolink.lib.common.type.interfaces.IBaseSuggestion
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import java.util.UUID
-import java.util.stream.Stream
 
 interface TagRepository : JpaRepository<TagEntity, UUID> {
 
-    fun countByTypeAndSlug(type: Int, slug: String): Long
-    fun findByTypeAndNameAndPath(type: Int, name: String, path: String?): TagEntity?
-    fun findByTypeAndPath(type: Int, path: String): TagEntity?
-    fun findByTypeAndPathIn(type: Int, names: List<String>): List<TagEntity>
-    fun getAllByType(type: Int): Stream<TagEntity>
-    fun findByTypeAndSlug(type: Int, slug: String): TagEntity?
+    fun countByTypeAndId(type: TagType, id: String): Long
 
-    @Query(
-        """
-        select
-            e.slug as id,
-            e.name as name
-        from TagEntity e
-        where
-            e.type = :type and
-            (:query is null or function('fts_query', 'simple', e.nameTsv, :query) = true)
-        """,
-    )
-    fun getSuggestionWithSlug(
-        @Param("type") type: Int,
-        @Param("query") query: String? = null,
-        pageable: Pageable = Pageable.ofSize(10)
-    ): List<IBaseSuggestion>
+    // fun findByTypeAndNameAndPath(type: Int, name: String, path: String?): TagEntity?
+    fun findByTypeAndPath(type: TagType, path: String): TagEntity?
+
+    // fun findByTypeAndPathIn(type: Int, names: List<String>): List<TagEntity>
+    // fun getAllByType(type: Int): Stream<TagEntity>
+    fun findByTypeAndId(type: TagType, id: String): TagEntity?
 
     @Query(
         """
@@ -46,8 +31,8 @@ interface TagRepository : JpaRepository<TagEntity, UUID> {
             (:query is null or function('fts_query', 'simple', e.nameTsv, :query) = true)
         """,
     )
-    fun getSuggestionWithId(
-        @Param("type") type: Int,
+    fun getSuggestion(
+        @Param("type") type: TagType,
         @Param("query") query: String? = null,
         pageable: Pageable = Pageable.ofSize(10)
     ): List<IBaseSuggestion>
@@ -55,7 +40,8 @@ interface TagRepository : JpaRepository<TagEntity, UUID> {
     @Query(
         """
         select
-            e
+            e.path as id,
+            e.name as name
         from TagEntity e
         where
             e.type = :type and
@@ -66,7 +52,7 @@ interface TagRepository : JpaRepository<TagEntity, UUID> {
         """,
     )
     fun getSuggestionWithPath(
-        @Param("type") type: Int,
+        @Param("type") type: TagType,
         @Param("level") level: Int? = null,
         @Param("query") query: String? = null,
         @Param("parents") parents: String = "",
@@ -85,23 +71,23 @@ interface TagRepository : JpaRepository<TagEntity, UUID> {
         """,
     )
     fun existPathByType(
-        @Param("type") type: Int,
+        @Param("type") type: TagType,
         @Param("parents") parents: String,
     ): Boolean
 
-    @Query(
-        """
-        select
-            e
-        from TagEntity e
-        where
-            e.type = :type and
-            (:query is null or function('fts_query', 'simple', e.nameTsv, :query) = true)
-        """,
-    )
-    fun getByType(
-        @Param("type") type: Int,
-        @Param("query") query: String? = null,
-        pageable: Pageable = Pageable.ofSize(10)
-    ): List<TagEntity>
+    // @Query(
+    //     """
+    //     select
+    //         e
+    //     from TagEntity e
+    //     where
+    //         e.type = :type and
+    //         (:query is null or function('fts_query', 'simple', e.nameTsv, :query) = true)
+    //     """,
+    // )
+    // fun getByType(
+    //     @Param("type") type: TagType,
+    //     @Param("query") query: String? = null,
+    //     pageable: Pageable = Pageable.ofSize(10)
+    // ): List<TagEntity>
 }

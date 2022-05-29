@@ -22,38 +22,41 @@ class SuggestionService(
         val (type, query, limit, offset, parentIds) = request
         val pageReq = PageRequest(offset, limit)
 
-        logger.info { parentIds }
-
         val q = if (query.isNullOrBlank()) null else query
 
         return if (
             type == SuggestionTypeEnum.Industry
         ) {
-            tagRepository.getSuggestionWithPath(TagType.Industry.value, null, q, "", pageReq)
+            tagRepository.getSuggestionWithPath(TagType.Industry, null, q, "", pageReq)
         } else if (
             type == SuggestionTypeEnum.IndustrySector
         ) {
-            tagRepository.getSuggestionWithPath(TagType.Industry.value, 1, q, "", pageReq)
+            tagRepository.getSuggestionWithPath(TagType.Industry, 1, q, "", pageReq)
         } else if (
             type == SuggestionTypeEnum.IndustryGroup &&
             !parentIds.isNullOrEmpty()
         ) {
             val pIds = parentIds.filter { it.isBlank().not() && it.split(".").count { c -> c.toIntOrNull() != null } == 1 }.map { "$it.*" }
             if (pIds.isEmpty()) return listOf()
-            tagRepository.getSuggestionWithPath(TagType.Industry.value, 2, q, pIds.joinToString(",", "{", "}"), pageReq)
+            tagRepository.getSuggestionWithPath(TagType.Industry, 2, q, pIds.joinToString(",", "{", "}"), pageReq)
         } else if (
             type == SuggestionTypeEnum.IndustryCode &&
             !parentIds.isNullOrEmpty()
         ) {
             val pIds = parentIds.filter { it.isBlank().not() && it.split(".").count { c -> c.toIntOrNull() != null } == 2 }.map { "$it.*" }
             if (pIds.isEmpty()) return listOf()
-            tagRepository.getSuggestionWithPath(TagType.Industry.value, 3, q, pIds.joinToString(",", "{", "}"), pageReq)
+            tagRepository.getSuggestionWithPath(TagType.Industry, 3, q, pIds.joinToString(",", "{", "}"), pageReq)
         } else if (
             type == SuggestionTypeEnum.ProductCode
         ) {
-            tagRepository.getSuggestionWithId(TagType.ProductCode.value, q, pageReq)
+            tagRepository.getSuggestion(TagType.ProductCode, q, pageReq)
+        } else if (
+            type == SuggestionTypeEnum.IndustryGroup ||
+            type == SuggestionTypeEnum.IndustryCode
+        ) {
+            listOf()
         } else {
-            tagRepository.getSuggestionWithSlug(TagType.valueOf(type.name).value, q, pageReq)
+            tagRepository.getSuggestion(TagType.valueOf(type.name), q, pageReq)
         }
     }
 }

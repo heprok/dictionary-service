@@ -39,10 +39,10 @@ class TagController(
     @ApiOperation("Get full info about tag by id and type")
     fun getTagInfo(
         @NotNull @ApiParam(value = "type", required = true) type: TagType,
-        @NotNull @ValidSlug @ApiParam(value = "slug", required = true) slug: String,
+        @NotNull @ValidSlug @ApiParam(value = "id", required = true) id: String,
         @NotNull @ApiParam(defaultValue = "false", value = "withParent", required = false) withParent: Boolean = false,
     ): ResponseEntity<Tag> {
-        return tagService.getTag(type, slug, withParent)?.let {
+        return tagService.getTag(type, id, withParent)?.let {
             ResponseEntity.ok(it)
         } ?: ResponseEntity.noContent().build()
     }

@@ -1,29 +1,36 @@
 package com.briolink.dictionaryservice.jpa.entity
 
 import com.briolink.dictionaryservice.model.TagType
+import com.briolink.lib.common.utils.StringUtils
 import org.hibernate.annotations.ColumnTransformer
 import org.hibernate.annotations.Type
+import java.util.UUID
 import javax.persistence.Column
 import javax.persistence.Entity
+import javax.persistence.Id
+import javax.persistence.PrePersist
 import javax.persistence.Table
-import javax.persistence.UniqueConstraint
 
-@Table(
-    name = "tag",
-    uniqueConstraints = [UniqueConstraint(columnNames = ["type", "slug"])]
-)
+@Table(name = "tag")
 @Entity
 class TagEntity(
-    @Column(name = "type", nullable = false)
-    var type: Int,
-    @Column(name = "slug", nullable = false, length = 255)
-    var slug: String,
+    @Id
+    @Column(name = "id", length = 255)
+    var id: String? = null,
+    @Type(type = "persist-enum")
+    @Column(name = "type", nullable = false, columnDefinition = "int2")
+    var type: TagType,
     @Column(name = "name", nullable = false, length = 255)
     var name: String
 ) : BaseEntity() {
 
-    val tagEnum: TagType
-        get() = TagType.ofValue(type)
+    @PrePersist
+    fun prePersist() {
+        if (id == null) {
+            id = if (type.idIsUUID) UUID.randomUUID().toString()
+            else StringUtils.slugify(name, false, 255)
+        }
+    }
 
     @ColumnTransformer(write = "to_tsvector('simple', ?)")
     @Column(name = "name_tsv", nullable = false)

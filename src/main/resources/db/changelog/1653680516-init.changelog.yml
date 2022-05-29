@@ -8,7 +8,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  type: uuid
+                  type: varchar(255)
                   constraints:
                     primaryKey: true
                     nullable: false
@@ -17,11 +17,6 @@ databaseChangeLog:
                   type: int2
                   constraints:
                     primaryKey: true
-                    nullable: false
-              - column:
-                  name: slug
-                  type: varchar(255)
-                  constraints:
                     nullable: false
               - column:
                   name: name
@@ -38,10 +33,6 @@ databaseChangeLog:
                   type: ltree
                   constraints:
                     nullable: true
-        - addUniqueConstraint:
-            tableName: tag
-            constraintName: unq_tag_slug
-            columnNames: type, slug
         - sql:
             sql: create index idx_tag_name on tag using btree ( name );
         - sql:

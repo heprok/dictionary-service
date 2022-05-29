@@ -10,7 +10,6 @@ import com.briolink.lib.common.exception.EntityExistException
 import com.briolink.lib.common.exception.EntityNotFoundException
 import com.briolink.lib.common.exception.ValidationException
 import com.briolink.lib.common.utils.StringUtils
-import io.swagger.v3.oas.annotations.parameters.RequestBody
 import mu.KLogging
 import org.springframework.stereotype.Service
 import org.springframework.validation.annotation.Validated
@@ -25,17 +24,19 @@ class TagService(
 ) {
     companion object : KLogging()
 
-    fun createTag(@Valid @RequestBody dto: TagDto): Tag {
-        if (dto.path != null && tagRepository.existPathByType(dto.type.value, "{${dto.path}}"))
+    fun createTag(@Valid dto: TagDto): Tag {
+        if (dto.path != null && tagRepository.existPathByType(dto.type, "{${dto.path}}"))
             throw EntityExistException("exception.tag.path.exist")
 
-        val slug = (dto.slug ?: StringUtils.slugify(dto.name, false, 255)).let {
-            if (tagRepository.countByTypeAndSlug(dto.type.value, it) > 0) StringUtils.slugify(dto.name, true, 255) else it
-        }
+        val id: String? = if (dto.id == null && !dto.type.idIsUUID) {
+            StringUtils.slugify(dto.name, false, 255).let {
+                if (tagRepository.countByTypeAndId(dto.type, it) > 0) StringUtils.slugify(dto.name, true, 255) else it
+            }
+        } else dto.id
 
-        TagEntity(type = dto.type.value, slug = slug, name = dto.name).apply {
+        TagEntity(id = id, type = dto.type, name = dto.name).apply {
             getPathDropLastPath(dto.path)?.also {
-                if (!tagRepository.existPathByType(dto.type.value, "{$it}")) {
+                if (!tagRepository.existPathByType(dto.type, "{$it}")) {
                     logger.error { "Path $it not found" }
                     throw ValidationException("validation.tag.path.not-exist")
                 }
@@ -44,14 +45,14 @@ class TagService(
             path = dto.path
 
             tagRepository.save(this).toDto().apply {
-                parent = getParent(tagEnum, this.path)
+                parent = getParent(dto.type, this.path)
                 return this
             }
         }
     }
 
-    fun getTag(type: TagType, slug: String, withParents: Boolean = false): Tag? {
-        return tagRepository.findByTypeAndSlug(type.value, slug)?.let {
+    fun getTag(type: TagType, id: String, withParents: Boolean = false): Tag? {
+        return tagRepository.findByTypeAndId(type, id)?.let {
             val tag = it.toDto()
             if (withParents) {
                 tag.parent = getParent(type, it.path)
@@ -64,7 +65,7 @@ class TagService(
     private fun getParent(type: TagType, originalPath: String?): Tag? {
         val parentPath = getPathDropLastPath(originalPath) ?: return null
 
-        val tagEntity = tagRepository.findByTypeAndPath(type.value, parentPath) ?: throw EntityNotFoundException("exception.tag.not-found")
+        val tagEntity = tagRepository.findByTypeAndPath(type, parentPath) ?: throw EntityNotFoundException("exception.tag.not-found")
         val tag = tagEntity.toDto().apply {
             this.parent = getParent(type, this.path)
         }

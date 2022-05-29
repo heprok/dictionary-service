@@ -8,10 +8,6 @@ import com.briolink.lib.common.jpa.type.SetArrayType
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType
 import org.hibernate.annotations.TypeDef
 import org.hibernate.annotations.TypeDefs
-import java.util.UUID
-import javax.persistence.Column
-import javax.persistence.GeneratedValue
-import javax.persistence.Id
 import javax.persistence.MappedSuperclass
 
 @TypeDefs(
@@ -24,9 +20,4 @@ import javax.persistence.MappedSuperclass
 
 )
 @MappedSuperclass
-abstract class BaseEntity {
-    @Id
-    @GeneratedValue
-    @Column(name = "id", nullable = false)
-    var id: UUID? = null
-}
+abstract class BaseEntity
