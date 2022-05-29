@@ -1,10 +1,10 @@
 package com.briolink.dictionaryservice.controller
 
 import com.briolink.dictionaryservice.model.Tag
-import com.briolink.dictionaryservice.model.TagType
 import com.briolink.dictionaryservice.service.tag.TagService
 import com.briolink.dictionaryservice.service.tag.dto.TagDto
 import com.briolink.dictionaryservice.validation.ValidSlug
+import com.briolink.lib.dictionary.enumeration.TagType
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
@@ -29,6 +29,7 @@ import javax.validation.constraints.NotNull
     ApiResponse(code = 201, message = "Tag found"),
     ApiResponse(code = 204, message = "Tag not found"),
     ApiResponse(code = 404, message = "Parent tag not found"),
+    ApiResponse(code = 406, message = "Tag type not found"),
     ApiResponse(code = 409, message = "Tag and path already exists")
 )
 @RequestMapping("/api/v1/tags")

@@ -3,13 +3,12 @@ package com.briolink.dictionaryservice.service.tag
 import com.briolink.dictionaryservice.jpa.entity.TagEntity
 import com.briolink.dictionaryservice.jpa.repository.TagRepository
 import com.briolink.dictionaryservice.model.Tag
-import com.briolink.dictionaryservice.model.TagType
-import com.briolink.dictionaryservice.model.toDto
 import com.briolink.dictionaryservice.service.tag.dto.TagDto
 import com.briolink.lib.common.exception.EntityExistException
 import com.briolink.lib.common.exception.EntityNotFoundException
 import com.briolink.lib.common.exception.ValidationException
 import com.briolink.lib.common.utils.StringUtils
+import com.briolink.lib.dictionary.enumeration.TagType
 import mu.KLogging
 import org.springframework.stereotype.Service
 import org.springframework.validation.annotation.Validated

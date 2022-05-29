@@ -1,11 +1,11 @@
 package com.briolink.dictionaryservice.service.suggestion
 
 import com.briolink.dictionaryservice.jpa.repository.TagRepository
-import com.briolink.dictionaryservice.model.TagType
 import com.briolink.dictionaryservice.service.suggestion.dto.SuggestionRequest
-import com.briolink.dictionaryservice.service.suggestion.dto.SuggestionTypeEnum
 import com.briolink.lib.common.type.interfaces.IBaseSuggestion
 import com.briolink.lib.common.type.jpa.PageRequest
+import com.briolink.lib.dictionary.enumeration.SuggestionTypeEnum
+import com.briolink.lib.dictionary.enumeration.TagType
 import mu.KLogging
 import org.springframework.stereotype.Service
 import org.springframework.validation.annotation.Validated

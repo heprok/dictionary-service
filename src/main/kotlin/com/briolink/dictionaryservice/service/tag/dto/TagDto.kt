@@ -1,8 +1,8 @@
 package com.briolink.dictionaryservice.service.tag.dto
 
-import com.briolink.dictionaryservice.model.TagType
 import com.briolink.dictionaryservice.validation.NullOrValidPath
 import com.briolink.dictionaryservice.validation.NullOrValidSlug
+import com.briolink.lib.dictionary.enumeration.TagType
 import io.swagger.annotations.ApiModelProperty
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull

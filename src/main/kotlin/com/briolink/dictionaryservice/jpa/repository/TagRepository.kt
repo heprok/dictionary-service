@@ -1,8 +1,8 @@
 package com.briolink.dictionaryservice.jpa.repository
 
 import com.briolink.dictionaryservice.jpa.entity.TagEntity
-import com.briolink.dictionaryservice.model.TagType
 import com.briolink.lib.common.type.interfaces.IBaseSuggestion
+import com.briolink.lib.dictionary.enumeration.TagType
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query

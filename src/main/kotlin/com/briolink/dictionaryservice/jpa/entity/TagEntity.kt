@@ -1,7 +1,8 @@
 package com.briolink.dictionaryservice.jpa.entity
 
-import com.briolink.dictionaryservice.model.TagType
+import com.briolink.dictionaryservice.model.Tag
 import com.briolink.lib.common.utils.StringUtils
+import com.briolink.lib.dictionary.enumeration.TagType
 import org.hibernate.annotations.ColumnTransformer
 import org.hibernate.annotations.Type
 import java.util.UUID
@@ -23,6 +24,13 @@ class TagEntity(
     @Column(name = "name", nullable = false, length = 255)
     var name: String
 ) : BaseEntity() {
+    fun toDto(): Tag = Tag(
+        id = id!!,
+        type = type,
+        name = name
+    ).also {
+        it.path = path
+    }
 
     @PrePersist
     fun prePersist() {

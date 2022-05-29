@@ -1,6 +1,7 @@
 package com.briolink.dictionaryservice.service.suggestion.dto
 
 import com.briolink.dictionaryservice.validation.PathList
+import com.briolink.lib.dictionary.enumeration.SuggestionTypeEnum
 import io.swagger.annotations.ApiModelProperty
 import javax.validation.constraints.Max
 import javax.validation.constraints.NotNull

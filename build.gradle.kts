@@ -126,7 +126,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
     // BRIOLINK LOCATION
-    // implementation("com.briolink.lib:dictionary:${Versions.Briolink.DICTIONARY}")
+    implementation("com.briolink.lib:dictionary:${Versions.Briolink.DICTIONARY}")
     implementation("com.briolink.lib:common:${Versions.Briolink.COMMON}")
 
     // Liquibase
