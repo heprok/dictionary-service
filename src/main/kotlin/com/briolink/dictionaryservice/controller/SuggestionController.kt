@@ -2,7 +2,7 @@ package com.briolink.dictionaryservice.controller
 
 import com.briolink.dictionaryservice.service.suggestion.SuggestionService
 import com.briolink.dictionaryservice.service.suggestion.dto.SuggestionRequest
-import com.briolink.lib.common.type.basic.BlSuggestion
+import com.briolink.lib.common.type.basic.Suggestion
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiResponse
@@ -29,9 +29,9 @@ class SuggestionController(
     @ApiOperation("Get list suggestion")
     fun getTagSuggestions(
         @RequestBody request: SuggestionRequest
-    ): ResponseEntity<List<BlSuggestion>> {
+    ): ResponseEntity<List<Suggestion>> {
         return suggestionService.getSuggestions(request).map {
-            BlSuggestion(it.id, it.name)
+            Suggestion(it.id, it.name)
         }.let {
             if (it.isEmpty())
                 ResponseEntity.noContent().build() else ResponseEntity.ok(it)

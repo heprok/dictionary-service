@@ -16,7 +16,6 @@ databaseChangeLog:
                   name: type
                   type: int2
                   constraints:
-                    primaryKey: true
                     nullable: false
               - column:
                   name: name
@@ -34,7 +33,15 @@ databaseChangeLog:
                   constraints:
                     nullable: true
         - sql:
-            sql: create index idx_tag_name on tag using btree ( name );
+            sql: create index ids_tag_id_type on tag(id, type)
+        - sql:
+            sql: create index ids_tag_path_type on tag(path, type)
+        - sql:
+            sql: create index ids_tag_name_tsv_type on tag(name_tsv, type)
+        - sql:
+            sql: create index idx_tag_name_type on tag using ( name, type );
+        - sql:
+            sql: create index idx_tag_name on tag using btree( name );
         - sql:
             sql: create index idx_tag_name_tsv on tag using gin ( name_tsv );
         - sql:

@@ -23,15 +23,23 @@ class TagService(
 ) {
     companion object : KLogging()
 
-    fun createTag(@Valid dto: TagDto): Tag {
+    fun createTag(@Valid dto: TagDto, withRandom: Boolean): Tag {
+
+        if (tagRepository.existByTypeAndNameAndPath(dto.type, dto.name, dto.path))
+            return getTag(dto.type, dto.name, dto.path, true)!!
+
         if (dto.path != null && tagRepository.existPathByType(dto.type, "{${dto.path}}"))
             throw EntityExistException("exception.tag.path.exist")
 
-        val id: String? = if (dto.id == null && !dto.type.idIsUUID) {
-            StringUtils.slugify(dto.name, false, 255).let {
-                if (tagRepository.countByTypeAndId(dto.type, it) > 0) StringUtils.slugify(dto.name, true, 255) else it
+        var id: String = dto.id ?: StringUtils.slugify(dto.name, false, 255)
+
+        if (tagRepository.existsById(id)) {
+            if (withRandom) {
+                id = StringUtils.slugify(dto.name, true, 255)
+            } else {
+                throw EntityExistException("exception.tag.exist")
             }
-        } else dto.id
+        }
 
         TagEntity(id = id, type = dto.type, name = dto.name).apply {
             getPathDropLastPath(dto.path)?.also {
@@ -50,13 +58,23 @@ class TagService(
         }
     }
 
-    fun getTag(type: TagType, id: String, withParents: Boolean = false): Tag? {
-        return tagRepository.findByTypeAndId(type, id)?.let {
+    fun getTag(id: String, withParents: Boolean = false): Tag? {
+        return tagRepository.findById(id).map {
+            if (withParents)
+                it.toDto().apply {
+                    parent = getParent(it.type, it.path)
+                }
+            else
+                it.toDto()
+        }.orElse(null)
+    }
+
+    fun getTag(type: TagType, name: String, path: String? = null, withParents: Boolean = false): Tag? {
+        return tagRepository.getByTypeAndNameAndPath(type, name, path)?.let {
             val tag = it.toDto()
             if (withParents) {
                 tag.parent = getParent(type, it.path)
             }
-
             tag
         }
     }
@@ -64,7 +82,7 @@ class TagService(
     private fun getParent(type: TagType, originalPath: String?): Tag? {
         val parentPath = getPathDropLastPath(originalPath) ?: return null
 
-        val tagEntity = tagRepository.findByTypeAndPath(type, parentPath) ?: throw EntityNotFoundException("exception.tag.not-found")
+        val tagEntity = tagRepository.getByTypeAndPath(type, parentPath) ?: throw EntityNotFoundException("exception.tag.not-found")
         val tag = tagEntity.toDto().apply {
             this.parent = getParent(type, this.path)
         }
