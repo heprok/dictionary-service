@@ -21,6 +21,12 @@ interface TagRepository : JpaRepository<TagEntity, String> {
 
     fun getByTypeAndNameAndPath(type: TagType, name: String, path: String?): TagEntity?
 
+    @Query(
+        """
+        select count(t) > 0 from TagEntity t
+        where t.type = :type and name = :name and path = :path
+    """
+    )
     fun existByTypeAndNameAndPath(type: TagType, name: String, path: String?): Boolean
 
     fun getByTypeAndName(type: TagType, name: String): TagEntity?
@@ -81,6 +87,25 @@ interface TagRepository : JpaRepository<TagEntity, String> {
     ): Boolean
 
     fun existsByNameAndType(name: String, type: TagType): Boolean
+
+    @Query(
+        """
+        select t from TagEntity t
+        where
+            (:ids = '[]' or t.id in :ids) and
+            (:names is '[]' or t.name in :names) and
+            (:types is '[]' or t.type in :types) and
+            ((:paths = '' or :paths = '{}') or function('lquery_arr', e.path, :paths) = true) and
+    """
+
+    )
+    fun findAll(
+        @Param("ids") ids: List<String>,
+        @Param("names") names: List<String>,
+        @Param("types") types: List<TagType>,
+        @Param("paths") paths: String,
+        pageable: Pageable = Pageable.ofSize(10)
+    ): List<TagEntity>
 
     @Query(
         """

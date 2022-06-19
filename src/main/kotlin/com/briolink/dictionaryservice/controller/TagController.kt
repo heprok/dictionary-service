@@ -3,6 +3,8 @@ package com.briolink.dictionaryservice.controller
 import com.briolink.dictionaryservice.model.Tag
 import com.briolink.dictionaryservice.service.tag.TagService
 import com.briolink.dictionaryservice.service.tag.dto.TagDto
+import com.briolink.lib.common.exception.BadRequestException
+import com.briolink.lib.common.type.jpa.PageRequest
 import com.briolink.lib.dictionary.enumeration.TagType
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
@@ -52,16 +54,36 @@ class TagController(
     }
 
     @GetMapping("/")
-    @ApiOperation("Find tag by name with path")
-    fun getTagInfo(
-        @NotNull @ApiParam(value = "type", required = true) type: TagType,
-        @NotNull @ApiParam(value = "path", required = true) path: String?,
-        @ApiParam(value = "name", required = true) name: String,
+    @ApiOperation("Get all tags")
+    fun getTagsInfo(
+        @ApiParam(value = "ids", required = false) ids: List<String>?,
+        @ApiParam(value = "names", required = false) names: List<String>?,
+        @ApiParam(value = "paths", required = false) paths: List<String>?,
+        @ApiParam(value = "types", required = false) types: List<TagType>?,
+        @ApiParam(value = "limit", required = true, defaultValue = "30") limit: Int = 30,
+        @ApiParam(value = "offset", required = true, defaultValue = "0") offset: Int = 0,
         @NotNull @ApiParam(defaultValue = "false", value = "withParent", required = false) withParent: Boolean = false,
-    ): ResponseEntity<Tag> {
-        val tag = tagService.getTag(type, name, path, withParent)
+    ): ResponseEntity<List<Tag>> {
 
-        return if (tag == null) ResponseEntity.noContent().build() else ResponseEntity.ok(tag)
+        if (ids.isNullOrEmpty() && names.isNullOrEmpty() && paths.isNullOrEmpty())
+            throw BadRequestException("ids, names, paths must be not null or empty")
+
+        if (!types.isNullOrEmpty() && names.isNullOrEmpty() && paths.isNullOrEmpty())
+            throw BadRequestException("Query must be names or paths")
+
+        if (limit < 0 || offset < 0)
+            throw BadRequestException("limit and offset must be greater than 0")
+
+        if (limit > 100)
+            throw BadRequestException("limit must be less than 100")
+
+        if (!ids.isNullOrEmpty() && ids.size > limit)
+            throw BadRequestException("ids must be less than limit")
+
+        val tags: List<Tag> =
+            tagService.getTags(ids, names, types, paths, withParent, PageRequest(offset, limit))
+
+        return if (tags.isEmpty()) ResponseEntity.noContent().build() else ResponseEntity.ok(tags)
     }
 
     @PostMapping("/")

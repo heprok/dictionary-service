@@ -49,7 +49,7 @@ class SuggestionService(
         } else if (
             type == SuggestionTypeEnum.ProductCode
         ) {
-            tagRepository.getSuggestion(TagType.ProductCode, q, pageReq)
+            tagRepository.getSuggestion(TagType.CPCCode, q, pageReq)
         } else if (
             type == SuggestionTypeEnum.IndustryGroup ||
             type == SuggestionTypeEnum.IndustryCode

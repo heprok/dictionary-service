@@ -7,6 +7,7 @@ import com.briolink.dictionaryservice.service.tag.dto.TagDto
 import com.briolink.lib.common.exception.EntityExistException
 import com.briolink.lib.common.exception.EntityNotFoundException
 import com.briolink.lib.common.exception.ValidationException
+import com.briolink.lib.common.type.jpa.PageRequest
 import com.briolink.lib.common.utils.StringUtils
 import com.briolink.lib.dictionary.enumeration.TagType
 import mu.KLogging
@@ -54,6 +55,39 @@ class TagService(
             tagRepository.save(this).toDto().apply {
                 parent = getParent(dto.type, this.path)
                 return this
+            }
+        }
+    }
+
+    fun getTags(ids: Set<String>, withParents: Boolean = false): List<Tag> {
+        return tagRepository.findAllById(ids).map {
+            it.toDto().apply {
+                if (withParents) {
+                    parent = getParent(it.type, it.path)
+                }
+            }
+        }
+    }
+
+    fun getTags(
+        ids: List<String>?,
+        names: List<String>?,
+        types: List<TagType>?,
+        paths: List<String>?,
+        withParents: Boolean,
+        page: PageRequest = PageRequest(0, 30)
+    ): List<Tag> {
+        return tagRepository.findAll(
+            ids ?: emptyList(),
+            names ?: emptyList(),
+            types ?: emptyList(),
+            paths?.joinToString(",", "{", "}") ?: "",
+            page
+        ).map {
+            it.toDto().apply {
+                if (withParents) {
+                    parent = getParent(it.type, it.path)
+                }
             }
         }
     }
