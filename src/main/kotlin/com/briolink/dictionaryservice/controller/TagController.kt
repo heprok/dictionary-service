@@ -53,7 +53,7 @@ class TagController(
         return if (tag == null) ResponseEntity.noContent().build() else ResponseEntity.ok(tag)
     }
 
-    @GetMapping("/")
+    @GetMapping("/", produces = ["application/json"])
     @ApiOperation("Get all tags")
     fun getTagsInfo(
         @ApiParam(value = "ids", required = false) ids: List<String>?,
@@ -86,11 +86,35 @@ class TagController(
         return if (tags.isEmpty()) ResponseEntity.noContent().build() else ResponseEntity.ok(tags)
     }
 
-    @PostMapping("/")
+    @PostMapping("/", produces = ["application/json"])
     @ApiOperation("Create new tag")
     fun createTag(
         @Valid @RequestBody tag: TagDto,
     ): ResponseEntity<Tag> {
         return ResponseEntity(tagService.createTag(tag, false), HttpStatus.CREATED)
     }
+
+    @PostMapping("/bul")
+    @ApiOperation("Create new tag")
+    fun createTags(
+        @org.springframework.web.bind.annotation.RequestBody tag: String,
+    ): ResponseEntity<Tag> {
+        println(tag)
+        throw BadRequestException("Not implemented")
+        // return ResponseEntity(tagService.createTag(tag, false), HttpStatus.CREATED)
+    }
+
+    // @PostMapping("/bulk")
+    // @ApiOperation("Create new tags")
+    // @ResponseBody
+    // fun createTags(
+    //     @RequestBody tagList: String,
+    // ): ResponseEntity<List<Tag>> {
+    //
+    //     throw Exception(tagList)
+    //     // if (tagList.tags.isEmpty())
+    //     //     throw BadRequestException("tagList must be not empty")
+    //
+    //     // return ResponseEntity(tagService.createTags(tagList.tags), HttpStatus.CREATED)
+    // }
 }

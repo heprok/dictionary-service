@@ -24,6 +24,53 @@ class TagService(
 ) {
     companion object : KLogging()
 
+    fun createTags(@Valid tags: List<@Valid TagDto>): List<Tag> {
+        val existTags = mutableListOf<Tag>()
+
+        val tagWithNotNullPathGtLt1 = tags.filter { it.path != null && it.path.split(".").count() > 1 }
+        val pathsForChecked = tagWithNotNullPathGtLt1.map { it.path }.toSet()
+        val checkPaths = mutableMapOf<TagType, MutableSet<String>>()
+
+        tagWithNotNullPathGtLt1.forEach { tag ->
+            val checkPath = getPathDropLastPath(tag.path) ?: return@forEach
+
+            if (!pathsForChecked.contains(checkPath)) {
+                checkPaths[tag.type].also {
+                    if (it != null) it.add(checkPath)
+                    else checkPaths[tag.type] = mutableSetOf(checkPath)
+                }
+            }
+        }
+
+        checkPaths.forEach { (type, paths) ->
+            if (!tagRepository.existPathByType(paths.count(), type, paths.joinToString(",", "{", "}"))) {
+                throw ValidationException("Tag with type $type, paths $paths not found")
+            }
+            val parents = paths.mapNotNull { getPathDropLastPath(it) }.filter { !pathsForChecked.contains(it) }.toSet()
+            if (parents.isNotEmpty()) {
+                if (!tagRepository.existPathByType(parents.count(), type, parents.joinToString(",", "{", "}"))) {
+                    throw ValidationException("Tag with type $type, paths $parents not found")
+                }
+            }
+        }
+
+        val tagEntities = tags.map { tagDto ->
+            if (tagRepository.existByTypeAndNameAndPath(tagDto.type, tagDto.name, tagDto.path)) {
+                existTags.add(getTag(tagDto.type, tagDto.name, tagDto.path, false)!!)
+            }
+            if (tagDto.path != null && tagRepository.existPathByType(tagDto.type, "{${tagDto.path}}"))
+                throw EntityExistException("exception.tag.path.exist")
+
+            TagEntity(
+                id = tagDto.id ?: StringUtils.slugify(tagDto.name, false, 255),
+                name = tagDto.name,
+                type = tagDto.type
+            )
+        }
+        val savedTags = tagRepository.saveAll(tagEntities.filter { !existTags.contains(it.toDto()) })
+        return savedTags.map { it.toDto() }.plus(existTags)
+    }
+
     fun createTag(@Valid dto: TagDto, withRandom: Boolean): Tag {
 
         if (tagRepository.existByTypeAndNameAndPath(dto.type, dto.name, dto.path))
@@ -78,9 +125,9 @@ class TagService(
         page: PageRequest = PageRequest(0, 30)
     ): List<Tag> {
         return tagRepository.findAll(
-            ids ?: emptyList(),
-            names ?: emptyList(),
-            types ?: emptyList(),
+            ids,
+            names,
+            types,
             paths?.joinToString(",", "{", "}") ?: "",
             page
         ).map {

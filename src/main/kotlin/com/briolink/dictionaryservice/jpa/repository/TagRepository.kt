@@ -86,23 +86,40 @@ interface TagRepository : JpaRepository<TagEntity, String> {
         @Param("parents") parents: String,
     ): Boolean
 
+    @Query(
+        """
+        select
+            count(e) = :countParents
+        from TagEntity e
+        where
+            e.type = :type and
+            function('lquery_arr', e.path, :parents) = true and
+            e.path is not null
+        """,
+    )
+    fun existPathByType(
+        @Param("countParents") countParents: Int,
+        @Param("type") type: TagType,
+        @Param("parents") parents: String,
+    ): Boolean
+
     fun existsByNameAndType(name: String, type: TagType): Boolean
 
     @Query(
         """
         select t from TagEntity t
         where
-            (:ids = '[]' or t.id in :ids) and
-            (:names is '[]' or t.name in :names) and
-            (:types is '[]' or t.type in :types) and
-            ((:paths = '' or :paths = '{}') or function('lquery_arr', e.path, :paths) = true) and
+            (:ids is null or t.id in :ids) and
+            (:names is null or t.name in :names) and
+            (:types is null or t.type in :types) and
+            ((:paths = '' or :paths = '{}') or function('lquery_arr', t.path, :paths) = true)
     """
 
     )
     fun findAll(
-        @Param("ids") ids: List<String>,
-        @Param("names") names: List<String>,
-        @Param("types") types: List<TagType>,
+        @Param("ids") ids: Collection<String>?,
+        @Param("names") names: Collection<String>?,
+        @Param("types") types: Collection<TagType>?,
         @Param("paths") paths: String,
         pageable: Pageable = Pageable.ofSize(10)
     ): List<TagEntity>

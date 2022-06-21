@@ -84,7 +84,7 @@ repositories {
     mavenLocal()
     setOf(
         36319712, // BL Common
-        // 36548529, // BL Dictionary
+        36548529, // BL Dictionary
     ).forEach {
         maven {
             url = uri("https://gitlab.com/api/v4/projects/$it/packages/maven")

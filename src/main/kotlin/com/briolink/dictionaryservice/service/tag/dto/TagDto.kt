@@ -3,6 +3,7 @@ package com.briolink.dictionaryservice.service.tag.dto
 import com.briolink.dictionaryservice.validation.NullOrValidPath
 import com.briolink.dictionaryservice.validation.NullOrValidSlug
 import com.briolink.lib.dictionary.enumeration.TagType
+import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.annotations.ApiModelProperty
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
@@ -23,4 +24,9 @@ data class TagDto(
     @get:NullOrValidPath
     @get:ApiModelProperty(required = false, example = "1.3.1")
     val path: String? = null,
+)
+
+data class TagDtoList(
+    @JsonProperty
+    var tags: List<TagDto>
 )
