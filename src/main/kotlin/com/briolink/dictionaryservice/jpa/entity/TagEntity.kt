@@ -5,7 +5,6 @@ import com.briolink.lib.common.utils.StringUtils
 import com.briolink.lib.dictionary.enumeration.TagType
 import org.hibernate.annotations.ColumnTransformer
 import org.hibernate.annotations.Type
-import java.util.UUID
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.Id
@@ -35,8 +34,7 @@ class TagEntity(
     @PrePersist
     fun prePersist() {
         if (id == null) {
-            id = if (type.idIsUUID) UUID.randomUUID().toString()
-            else StringUtils.slugify(name, false, 255)
+            id = StringUtils.slugify(name, false, 255)
         }
     }
 

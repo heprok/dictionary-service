@@ -27,11 +27,11 @@ class TagService(
     fun createTags(@Valid tags: List<@Valid TagDto>): List<Tag> {
         val existTags = mutableListOf<Tag>()
 
-        val tagWithNotNullPathGtLt1 = tags.filter { it.path != null && it.path.split(".").count() > 1 }
-        val pathsForChecked = tagWithNotNullPathGtLt1.map { it.path }.toSet()
+        val tagWithNotNullPath = tags.filter { it.path != null && it.path.split(".").isNotEmpty() }
+        val pathsForChecked = tagWithNotNullPath.map { it.path }.toSet()
         val checkPaths = mutableMapOf<TagType, MutableSet<String>>()
 
-        tagWithNotNullPathGtLt1.forEach { tag ->
+        tagWithNotNullPath.forEach { tag ->
             val checkPath = getPathDropLastPath(tag.path) ?: return@forEach
 
             if (!pathsForChecked.contains(checkPath)) {
@@ -43,12 +43,12 @@ class TagService(
         }
 
         checkPaths.forEach { (type, paths) ->
-            if (!tagRepository.existPathByType(paths.count(), type, paths.joinToString(",", "{", "}"))) {
+            if (!tagRepository.existPathByType(paths.count().toLong(), type, paths.joinToString(",", "{", "}"))) {
                 throw ValidationException("Tag with type $type, paths $paths not found")
             }
             val parents = paths.mapNotNull { getPathDropLastPath(it) }.filter { !pathsForChecked.contains(it) }.toSet()
             if (parents.isNotEmpty()) {
-                if (!tagRepository.existPathByType(parents.count(), type, parents.joinToString(",", "{", "}"))) {
+                if (!tagRepository.existPathByType(parents.count().toLong(), type, parents.joinToString(",", "{", "}"))) {
                     throw ValidationException("Tag with type $type, paths $parents not found")
                 }
             }
@@ -65,10 +65,16 @@ class TagService(
                 id = tagDto.id ?: StringUtils.slugify(tagDto.name, false, 255),
                 name = tagDto.name,
                 type = tagDto.type
-            )
+            ).apply {
+                path = tagDto.path
+            }
         }
+
         val savedTags = tagRepository.saveAll(tagEntities.filter { !existTags.contains(it.toDto()) })
-        return savedTags.map { it.toDto() }.plus(existTags)
+
+        return savedTags.map { it.toDto() }.plus(existTags).let {
+            getParent(it)
+        }
     }
 
     fun createTag(@Valid dto: TagDto, withRandom: Boolean): Tag {
@@ -130,7 +136,7 @@ class TagService(
             types,
             paths?.joinToString(",", "{", "}") ?: "",
             page
-        ).map {
+        ).content.map {
             it.toDto().apply {
                 if (withParents) {
                     parent = getParent(it.type, it.path)
@@ -168,6 +174,51 @@ class TagService(
             this.parent = getParent(type, this.path)
         }
 
+        return tag
+    }
+
+    private fun getParent(list: List<Tag>): List<Tag> {
+        val mapTagsByType = list.groupBy { it.type }
+        val resultTag = mutableListOf<Tag>()
+        mapTagsByType.forEach { (tagType, tags) ->
+            val paths = tags.mapNotNull { it.path }.toSet()
+            val parentsPaths = mutableSetOf<String>()
+
+            paths.forEach { tagPath ->
+                var path: String? = tagPath
+
+                while (path != null) {
+                    path = getPathDropLastPath(path)?.also {
+                        parentsPaths.add(it)
+                    }
+                }
+            }
+
+            val parents = tagRepository.getTagsByPathsAndType(tagType, parentsPaths.joinToString(",", "{", "}")).map { it.toDto() }
+
+            resultTag.addAll(
+                tags.map {
+                    it.parent = getParent(it, parents)
+                    it
+                }
+            )
+        }
+
+        return resultTag
+    }
+
+    private fun getParent(tag: Tag, listParents: List<Tag>): Tag? {
+        if (getPathDropLastPath(tag.path) == null) return null
+
+        val tagsParentByPath = listParents.associateBy { it.path }
+
+        tag.apply {
+            val tagParent = tagsParentByPath.getOrDefault(getPathDropLastPath(path), null)
+
+            parent = tagParent?.apply {
+                parent = getParent(this, listParents)
+            }
+        }
         return tag
     }
 

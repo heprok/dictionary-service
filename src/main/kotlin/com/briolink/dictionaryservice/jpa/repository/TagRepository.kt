@@ -3,6 +3,7 @@ package com.briolink.dictionaryservice.jpa.repository
 import com.briolink.dictionaryservice.jpa.entity.TagEntity
 import com.briolink.lib.common.type.interfaces.IBaseSuggestion
 import com.briolink.lib.dictionary.enumeration.TagType
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -98,10 +99,25 @@ interface TagRepository : JpaRepository<TagEntity, String> {
         """,
     )
     fun existPathByType(
-        @Param("countParents") countParents: Int,
+        @Param("countParents") countParents: Long,
         @Param("type") type: TagType,
         @Param("parents") parents: String,
     ): Boolean
+    @Query(
+        """
+        select
+            e
+        from TagEntity e
+        where
+            e.type = :type and
+            function('lquery_arr', e.path, :parents) = true and
+            e.path is not null
+        """,
+    )
+    fun getTagsByPathsAndType(
+        @Param("type") type: TagType,
+        @Param("parents") parents: String,
+    ): List<TagEntity>
 
     fun existsByNameAndType(name: String, type: TagType): Boolean
 
@@ -122,7 +138,7 @@ interface TagRepository : JpaRepository<TagEntity, String> {
         @Param("types") types: Collection<TagType>?,
         @Param("paths") paths: String,
         pageable: Pageable = Pageable.ofSize(10)
-    ): List<TagEntity>
+    ): Page<TagEntity>
 
     @Query(
         """
@@ -170,4 +186,7 @@ interface TagRepository : JpaRepository<TagEntity, String> {
         @Param("parentName1") parentName1: String,
         @Param("parentName2") parentName2: String,
     ): String
+
+    @Query("select t from TagEntity t where t.type in ?1")
+    fun findByTypeIn(types: Collection<TagType>?): List<TagEntity>
 }

@@ -5,6 +5,7 @@ import com.briolink.dictionaryservice.validation.NullOrValidSlug
 import com.briolink.lib.dictionary.enumeration.TagType
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.annotations.ApiModelProperty
+import javax.validation.Valid
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
@@ -28,5 +29,5 @@ data class TagDto(
 
 data class TagDtoList(
     @JsonProperty
-    var tags: List<TagDto>
+    var tags: ArrayList<@Valid TagDto>
 )

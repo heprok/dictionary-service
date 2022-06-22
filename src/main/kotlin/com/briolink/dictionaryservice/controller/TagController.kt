@@ -3,6 +3,7 @@ package com.briolink.dictionaryservice.controller
 import com.briolink.dictionaryservice.model.Tag
 import com.briolink.dictionaryservice.service.tag.TagService
 import com.briolink.dictionaryservice.service.tag.dto.TagDto
+import com.briolink.dictionaryservice.service.tag.dto.TagDtoList
 import com.briolink.lib.common.exception.BadRequestException
 import com.briolink.lib.common.type.jpa.PageRequest
 import com.briolink.lib.dictionary.enumeration.TagType
@@ -11,14 +12,15 @@ import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
-import io.swagger.v3.oas.annotations.parameters.RequestBody
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
@@ -86,7 +88,7 @@ class TagController(
         return if (tags.isEmpty()) ResponseEntity.noContent().build() else ResponseEntity.ok(tags)
     }
 
-    @PostMapping("/", produces = ["application/json"])
+    @PostMapping("/", produces = ["application/json"], consumes = ["application/json"])
     @ApiOperation("Create new tag")
     fun createTag(
         @Valid @RequestBody tag: TagDto,
@@ -94,27 +96,16 @@ class TagController(
         return ResponseEntity(tagService.createTag(tag, false), HttpStatus.CREATED)
     }
 
-    @PostMapping("/bul")
-    @ApiOperation("Create new tag")
+    @PostMapping("/bulk", produces = ["application/json"], consumes = ["application/json"])
+    @ApiOperation("Create new tags")
+    @ResponseBody
     fun createTags(
-        @org.springframework.web.bind.annotation.RequestBody tag: String,
-    ): ResponseEntity<Tag> {
-        println(tag)
-        throw BadRequestException("Not implemented")
-        // return ResponseEntity(tagService.createTag(tag, false), HttpStatus.CREATED)
-    }
+        @NotNull @Valid @RequestBody tagList: TagDtoList,
+    ): ResponseEntity<List<Tag>> {
 
-    // @PostMapping("/bulk")
-    // @ApiOperation("Create new tags")
-    // @ResponseBody
-    // fun createTags(
-    //     @RequestBody tagList: String,
-    // ): ResponseEntity<List<Tag>> {
-    //
-    //     throw Exception(tagList)
-    //     // if (tagList.tags.isEmpty())
-    //     //     throw BadRequestException("tagList must be not empty")
-    //
-    //     // return ResponseEntity(tagService.createTags(tagList.tags), HttpStatus.CREATED)
-    // }
+        if (tagList.tags.isEmpty())
+            throw BadRequestException("tagList must be not empty")
+
+        return ResponseEntity(tagService.createTags(tagList.tags), HttpStatus.CREATED)
+    }
 }
