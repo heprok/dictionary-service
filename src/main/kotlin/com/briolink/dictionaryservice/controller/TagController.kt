@@ -102,7 +102,6 @@ class TagController(
     fun createTags(
         @NotNull @Valid @RequestBody tagList: TagDtoList,
     ): ResponseEntity<List<Tag>> {
-
         if (tagList.tags.isEmpty())
             throw BadRequestException("tagList must be not empty")
 

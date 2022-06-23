@@ -44,12 +44,14 @@ class TagService(
 
         checkPaths.forEach { (type, paths) ->
             if (!tagRepository.existPathByType(paths.count().toLong(), type, paths.joinToString(",", "{", "}"))) {
-                throw ValidationException("Tag with type $type, paths $paths not found")
+                throw EntityNotFoundException("Tag with type $type, paths $paths not found")
             }
-            val parents = paths.mapNotNull { getPathDropLastPath(it) }.filter { !pathsForChecked.contains(it) }.toSet()
-            if (parents.isNotEmpty()) {
-                if (!tagRepository.existPathByType(parents.count().toLong(), type, parents.joinToString(",", "{", "}"))) {
-                    throw ValidationException("Tag with type $type, paths $parents not found")
+
+            val parentPaths = paths.mapNotNull { getPathDropLastPath(it) }.filter { !pathsForChecked.contains(it) }.toSet()
+
+            if (parentPaths.isNotEmpty()) {
+                if (!tagRepository.existPathByType(parentPaths.count().toLong(), type, parentPaths.joinToString(",", "{", "}"))) {
+                    throw EntityNotFoundException("Tag with type $type, paths $parentPaths not found")
                 }
             }
         }
@@ -73,7 +75,7 @@ class TagService(
         val savedTags = tagRepository.saveAll(tagEntities.filter { !existTags.contains(it.toDto()) })
 
         return savedTags.map { it.toDto() }.plus(existTags).let {
-            getParent(it)
+            getParentByTags(it)
         }
     }
 
@@ -168,8 +170,8 @@ class TagService(
 
     private fun getParent(type: TagType, originalPath: String?): Tag? {
         val parentPath = getPathDropLastPath(originalPath) ?: return null
-
         val tagEntity = tagRepository.getByTypeAndPath(type, parentPath) ?: throw EntityNotFoundException("exception.tag.not-found")
+
         val tag = tagEntity.toDto().apply {
             this.parent = getParent(type, this.path)
         }
@@ -177,7 +179,7 @@ class TagService(
         return tag
     }
 
-    private fun getParent(list: List<Tag>): List<Tag> {
+    private fun getParentByTags(list: List<Tag>): List<Tag> {
         val mapTagsByType = list.groupBy { it.type }
         val resultTag = mutableListOf<Tag>()
         mapTagsByType.forEach { (tagType, tags) ->
@@ -198,7 +200,7 @@ class TagService(
 
             resultTag.addAll(
                 tags.map {
-                    it.parent = getParent(it, parents)
+                    it.parent = getParentByTag(it, parents)
                     it
                 }
             )
@@ -207,19 +209,18 @@ class TagService(
         return resultTag
     }
 
-    private fun getParent(tag: Tag, listParents: List<Tag>): Tag? {
-        if (getPathDropLastPath(tag.path) == null) return null
+    private fun getParentByTag(tag: Tag, listParents: List<Tag>): Tag? {
+        val tagParentPath = getPathDropLastPath(tag.path) ?: return null
 
         val tagsParentByPath = listParents.associateBy { it.path }
 
-        tag.apply {
-            val tagParent = tagsParentByPath.getOrDefault(getPathDropLastPath(path), null)
+        val tagParent = tagsParentByPath.getOrDefault(tagParentPath, null)
 
-            parent = tagParent?.apply {
-                parent = getParent(this, listParents)
-            }
+        tagParent?.apply {
+            parent = getParentByTag(this, listParents)
         }
-        return tag
+
+        return tagParent
     }
 
     private fun getPathDropLastPath(path: String?): String? {
