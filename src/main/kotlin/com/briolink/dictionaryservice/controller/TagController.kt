@@ -5,6 +5,7 @@ import com.briolink.dictionaryservice.service.tag.TagService
 import com.briolink.dictionaryservice.service.tag.dto.TagDto
 import com.briolink.dictionaryservice.service.tag.dto.TagDtoList
 import com.briolink.lib.common.exception.BadRequestException
+import com.briolink.lib.common.exception.EntityNotFoundException
 import com.briolink.lib.common.type.jpa.PageRequest
 import com.briolink.lib.dictionary.enumeration.TagType
 import io.swagger.annotations.Api
@@ -52,7 +53,7 @@ class TagController(
     ): ResponseEntity<Tag> {
         val tag = tagService.getTag(id, withParent)
 
-        return if (tag == null) ResponseEntity.noContent().build() else ResponseEntity.ok(tag)
+        return if (tag == null) throw EntityNotFoundException() else ResponseEntity.ok(tag)
     }
 
     @GetMapping("/", produces = ["application/json"])
