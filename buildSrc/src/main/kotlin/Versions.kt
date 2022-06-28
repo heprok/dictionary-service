@@ -15,8 +15,8 @@ object Versions {
     }
 
     object Briolink {
-        const val DICTIONARY = "0.0.3"
-        const val COMMON = "0.0.5"
+        const val DICTIONARY = "0.0.10"
+        const val COMMON = "0.0.6"
     }
 
     const val LIQUIBASE_CORE = "4.8.0"

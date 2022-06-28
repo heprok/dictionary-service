@@ -1,11 +1,11 @@
 package com.briolink.dictionaryservice.controller
 
 import com.briolink.dictionaryservice.model.Tag
+import com.briolink.dictionaryservice.model.TagId
 import com.briolink.dictionaryservice.service.tag.TagService
 import com.briolink.dictionaryservice.service.tag.dto.TagDto
 import com.briolink.dictionaryservice.service.tag.dto.TagDtoList
 import com.briolink.lib.common.exception.BadRequestException
-import com.briolink.lib.common.exception.EntityNotFoundException
 import com.briolink.lib.common.type.jpa.PageRequest
 import com.briolink.lib.dictionary.enumeration.TagType
 import io.swagger.annotations.Api
@@ -42,18 +42,16 @@ import javax.validation.constraints.NotNull
 class TagController(
     private val tagService: TagService,
 ) {
-    @GetMapping("/{id}/")
-    @ApiOperation(
-        "Get full info about tag by id",
-        notes = "The query must contain a name or id. First you search by id, then by name"
-    )
+    @GetMapping("/{type}/{id}/")
+    @ApiOperation("Get full info about tag by id and type")
     fun getTagInfo(
         @NotNull @ApiParam(defaultValue = "false", value = "withParent", required = false) withParent: Boolean = false,
         @PathVariable id: String,
+        @PathVariable type: TagType,
     ): ResponseEntity<Tag> {
-        val tag = tagService.getTag(id, withParent)
+        val tag = tagService.getTag(TagId(id, type), withParent)
 
-        return if (tag == null) throw EntityNotFoundException() else ResponseEntity.ok(tag)
+        return if (tag == null) ResponseEntity.noContent().build() else ResponseEntity.ok(tag)
     }
 
     @GetMapping("/", produces = ["application/json"])
@@ -94,7 +92,7 @@ class TagController(
     fun createTag(
         @Valid @RequestBody tag: TagDto,
     ): ResponseEntity<Tag> {
-        return ResponseEntity(tagService.createTag(tag, false), HttpStatus.CREATED)
+        return ResponseEntity(tagService.createTag(tag, tag.id == null), HttpStatus.CREATED)
     }
 
     @PostMapping("/bulk", produces = ["application/json"], consumes = ["application/json"])

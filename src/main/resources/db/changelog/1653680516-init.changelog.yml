@@ -16,6 +16,7 @@ databaseChangeLog:
                   name: type
                   type: int2
                   constraints:
+                    primaryKey: true
                     nullable: false
               - column:
                   name: name
@@ -32,8 +33,6 @@ databaseChangeLog:
                   type: ltree
                   constraints:
                     nullable: true
-        - sql:
-            sql: create index ids_tag_id_type on tag (id, type)
         - sql:
             sql: create index ids_tag_path_type on tag (path, type)
         - sql:

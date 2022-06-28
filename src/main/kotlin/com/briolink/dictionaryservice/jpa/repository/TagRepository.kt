@@ -1,50 +1,46 @@
 package com.briolink.dictionaryservice.jpa.repository
 
 import com.briolink.dictionaryservice.jpa.entity.TagEntity
+import com.briolink.dictionaryservice.jpa.entity.TagPK
 import com.briolink.lib.common.type.interfaces.IBaseSuggestion
-import com.briolink.lib.dictionary.enumeration.TagType
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 
-interface TagRepository : JpaRepository<TagEntity, String> {
-
-    fun countByTypeAndId(type: TagType, id: String): Long
+interface TagRepository : JpaRepository<TagEntity, TagPK> {
 
     // fun findByTypeAndNameAndPath(type: Int, name: String, path: String?): TagEntity?
-    fun getByTypeAndPath(type: TagType, path: String): TagEntity?
+    @Query("SELECT t FROM TagEntity t WHERE t.id._type = ?1 AND t.path = ?2")
+    fun getByTypeAndPath(type: Int, path: String): TagEntity?
 
     // fun findByTypeAndPathIn(type: Int, names: List<String>): List<TagEntity>
     // fun getAllByType(type: Int): Stream<TagEntity>
-    fun getByTypeAndId(type: TagType, id: String): TagEntity?
-
-    fun getByTypeAndNameAndPath(type: TagType, name: String, path: String?): TagEntity?
+    @Query("select t from TagEntity t where t.id._type = ?1 and t.name = ?2 and t.path = ?3")
+    fun getByTypeAndNameAndPath(type: Int, name: String, path: String?): TagEntity?
 
     @Query(
         """
         select count(t) > 0 from TagEntity t
-        where t.type = :type and name = :name and path = :path
+        where t.id._type = ?1 and t.name = ?2 and t.path = ?3
     """
     )
-    fun existByTypeAndNameAndPath(type: TagType, name: String, path: String?): Boolean
-
-    fun getByTypeAndName(type: TagType, name: String): TagEntity?
+    fun existByTypeAndNameAndPath(type: Int, name: String, path: String?): Boolean
 
     @Query(
         """
         select
-            e.id as id,
+            function('concat_ws', ';', e.id._type, e.id) as id,
             e.name as name
         from TagEntity e
         where
-            e.type = :type and
+            e.id._type = :type and
             (:query is null or function('fts_query', 'simple', e.nameTsv, :query) = true)
         """,
     )
     fun getSuggestion(
-        @Param("type") type: TagType,
+        @Param("type") type: Int,
         @Param("query") query: String? = null,
         pageable: Pageable = Pageable.ofSize(10)
     ): List<IBaseSuggestion>
@@ -56,7 +52,7 @@ interface TagRepository : JpaRepository<TagEntity, String> {
             e.name as name
         from TagEntity e
         where
-            e.type = :type and
+            e.id._type = :type and
             (:query is null or function('fts_query', 'simple', e.nameTsv, :query) = true) and
             (:level is null or function('nlevel', e.path) = :level) and
             ((:parents = '' or :parents = '{}') or function('lquery_arr', e.path, :parents) = true) and
@@ -64,7 +60,7 @@ interface TagRepository : JpaRepository<TagEntity, String> {
         """,
     )
     fun getSuggestionWithPath(
-        @Param("type") type: TagType,
+        @Param("type") type: Int,
         @Param("level") level: Int? = null,
         @Param("query") query: String? = null,
         @Param("parents") parents: String = "",
@@ -77,13 +73,13 @@ interface TagRepository : JpaRepository<TagEntity, String> {
             count(e) > 0
         from TagEntity e
         where
-            e.type = :type and
+            e.id._type = :type and
             function('lquery_arr', e.path, :parents) = true and
             e.path is not null
         """,
     )
     fun existPathByType(
-        @Param("type") type: TagType,
+        @Param("type") type: Int,
         @Param("parents") parents: String,
     ): Boolean
 
@@ -93,41 +89,40 @@ interface TagRepository : JpaRepository<TagEntity, String> {
             count(e) = :countParents
         from TagEntity e
         where
-            e.type = :type and
+            e.id._type = :type and
             function('lquery_arr', e.path, :parents) = true and
             e.path is not null
         """,
     )
     fun existPathByType(
         @Param("countParents") countParents: Long,
-        @Param("type") type: TagType,
+        @Param("type") type: Int,
         @Param("parents") parents: String,
     ): Boolean
+
     @Query(
         """
         select
             e
         from TagEntity e
         where
-            e.type = :type and
+            e.id._type = :type and
             function('lquery_arr', e.path, :parents) = true and
             e.path is not null
         """,
     )
     fun getTagsByPathsAndType(
-        @Param("type") type: TagType,
+        @Param("type") type: Int,
         @Param("parents") parents: String,
     ): List<TagEntity>
-
-    fun existsByNameAndType(name: String, type: TagType): Boolean
 
     @Query(
         """
         select t from TagEntity t
         where
-            (:ids is null or t.id in :ids) and
+            (:ids is null or t.id.id in :ids) and
             (:names is null or t.name in :names) and
-            (:types is null or t.type in :types) and
+            (:types is null or t.id._type in :types) and
             ((:paths = '' or :paths = '{}') or function('lquery_arr', t.path, :paths) = true)
     """
 
@@ -135,7 +130,7 @@ interface TagRepository : JpaRepository<TagEntity, String> {
     fun findAll(
         @Param("ids") ids: Collection<String>?,
         @Param("names") names: Collection<String>?,
-        @Param("types") types: Collection<TagType>?,
+        @Param("types") types: Collection<Int>?,
         @Param("paths") paths: String,
         pageable: Pageable = Pageable.ofSize(10)
     ): Page<TagEntity>
@@ -186,7 +181,4 @@ interface TagRepository : JpaRepository<TagEntity, String> {
         @Param("parentName1") parentName1: String,
         @Param("parentName2") parentName2: String,
     ): String
-
-    @Query("select t from TagEntity t where t.type in ?1")
-    fun findByTypeIn(types: Collection<TagType>?): List<TagEntity>
 }

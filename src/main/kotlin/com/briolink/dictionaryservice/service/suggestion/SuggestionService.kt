@@ -27,36 +27,36 @@ class SuggestionService(
         return if (
             type == SuggestionTypeEnum.Industry
         ) {
-            tagRepository.getSuggestionWithPath(TagType.Industry, null, q, "", pageReq)
+            tagRepository.getSuggestionWithPath(TagType.Industry.idType, null, q, "", pageReq)
         } else if (
             type == SuggestionTypeEnum.IndustrySector
         ) {
-            tagRepository.getSuggestionWithPath(TagType.Industry, 1, q, "", pageReq)
+            tagRepository.getSuggestionWithPath(TagType.Industry.idType, 1, q, "", pageReq)
         } else if (
             type == SuggestionTypeEnum.IndustryGroup &&
             !parentIds.isNullOrEmpty()
         ) {
             val pIds = parentIds.filter { it.isBlank().not() && it.split(".").count { c -> c.toIntOrNull() != null } == 1 }.map { "$it.*" }
             if (pIds.isEmpty()) return listOf()
-            tagRepository.getSuggestionWithPath(TagType.Industry, 2, q, pIds.joinToString(",", "{", "}"), pageReq)
+            tagRepository.getSuggestionWithPath(TagType.Industry.idType, 2, q, pIds.joinToString(",", "{", "}"), pageReq)
         } else if (
             type == SuggestionTypeEnum.IndustryCode &&
             !parentIds.isNullOrEmpty()
         ) {
             val pIds = parentIds.filter { it.isBlank().not() && it.split(".").count { c -> c.toIntOrNull() != null } == 2 }.map { "$it.*" }
             if (pIds.isEmpty()) return listOf()
-            tagRepository.getSuggestionWithPath(TagType.Industry, 3, q, pIds.joinToString(",", "{", "}"), pageReq)
+            tagRepository.getSuggestionWithPath(TagType.Industry.idType, 3, q, pIds.joinToString(",", "{", "}"), pageReq)
         } else if (
             type == SuggestionTypeEnum.ProductCode
         ) {
-            tagRepository.getSuggestion(TagType.CPC, q, pageReq)
+            tagRepository.getSuggestion(TagType.CPC.idType, q, pageReq)
         } else if (
             type == SuggestionTypeEnum.IndustryGroup ||
             type == SuggestionTypeEnum.IndustryCode
         ) {
             listOf()
         } else {
-            tagRepository.getSuggestion(TagType.valueOf(type.name), q, pageReq)
+            tagRepository.getSuggestion(TagType.valueOf(type.name).idType, q, pageReq)
         }
     }
 }
